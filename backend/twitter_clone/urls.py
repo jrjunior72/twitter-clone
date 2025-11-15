@@ -8,7 +8,7 @@ urlpatterns = [
     # ⬇️ COMENTE ESTAS LINhas TEMPORARIAMENTE ⬇️
     path('api/auth/', include('users.urls')), # ⬅️ DESCOMENTADA
     path('api/posts/', include('posts.urls')), # ⬅️ DESCOMENTADA
-    # path('api/relationships/', include('relationships.urls')),
+    path('api/relationships/', include('relationships.urls')), # ⬅️ DESCOMENTADA
 ]
 
 if settings.DEBUG:
