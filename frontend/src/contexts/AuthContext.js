@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
 
   const login = async (username, password) => {
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/login/', {
+      const response = await axios.post('http://localhost:8080/api/auth/login/', {
         username,
         password
       });
@@ -47,7 +47,7 @@ export function AuthProvider({ children }) {
 
   const register = async (userData) => {
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/register/', userData);
+      const response = await axios.post('http://localhost:8080/api/auth/register/', userData);
       
       const { user, access } = response.data;
       
