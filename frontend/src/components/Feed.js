@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { postsAPI } from '../services/api';
 import Post from './Post';
 import CreatePost from './CreatePost';
 
 function Feed() {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(''); // ⬅️ FALTANDO ESTA LINHA!
 
     useEffect(() => {
         fetchPosts();
@@ -13,9 +14,9 @@ function Feed() {
 
     const fetchPosts = async () => {
         try {
-            const response = await postsAPI.getPosts();
-            // const response = await axios.get('http://localhost:8080/api/posts/');
-            setPosts(response.data);
+            const posts = await postsAPI.getPosts();
+            // console.log("Posts API response:", posts);
+            setPosts(posts || []);
         } catch (error) {
             setError('Erro ao carregar posts');
             console.error('Error fetching posts:', error);
@@ -31,7 +32,6 @@ function Feed() {
     const handleLike = async (postId) => {
         try {
             await postsAPI.likePost(postId);
-            // await axios.post(`http://localhost:8080/api/posts/${postId}/like/`);
 
             // Atualizar o estado local
             setPosts(posts.map(post => 
@@ -94,7 +94,7 @@ function Feed() {
                 )}
             </div>
         </div>
-  );
+    );
 }
 
 export default Feed;

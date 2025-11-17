@@ -27,18 +27,6 @@ function App() {
                 <Feed />
               </ProtectedRoute>
             } />
-            {/* <Route path="/profile" element={
-              <ProtectedRoute>
-                <Navbar />
-                <Profile />
-              </ProtectedRoute>
-            } /> */}
-            <Route path="/user/:username" element={
-              <ProtectedRoute>
-                <Navbar />
-                <Profile />
-              </ProtectedRoute>
-            } />
           </Routes>
         </div>
       </Router>

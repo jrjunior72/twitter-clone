@@ -1,3 +1,5 @@
+// contexts/AuthContext.js
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 
@@ -11,13 +13,22 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ⬇️ CONFIGURAR AXIOS GLOBALMENTE ⬇️
+  const setupAxiosHeaders = (token) => {
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Token ${token}`;
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     const userData = localStorage.getItem('user');
     
     if (token && userData) {
       setUser(JSON.parse(userData));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      axios.defaults.headers.common['Authorization'] = `Token ${token}`;
     }
     setLoading(false);
   }, []);
@@ -28,13 +39,19 @@ export function AuthProvider({ children }) {
         username,
         password
       });
+      console.log("Login response:", response.data);
 
-      const { user, access } = response.data;
+      const { user, token } = response.data;
       
-      localStorage.setItem('access_token', access);
+      localStorage.setItem('access_token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
+
+      // ⬇️ CONFIGURAR AXIOS APÓS LOGIN ⬇️
+      setupAxiosHeaders(token);
+      
       setUser(user);
+      
+      console.log('✅ Login realizado - Token configurado');
       
       return { success: true };
     } catch (error) {
@@ -49,11 +66,14 @@ export function AuthProvider({ children }) {
     try {
       const response = await axios.post('http://localhost:8080/api/auth/register/', userData);
       
-      const { user, access } = response.data;
+      const { user, token } = response.data;
       
-      localStorage.setItem('access_token', access);
+      localStorage.setItem('access_token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
+
+      // ⬇️ CONFIGURAR AXIOS APÓS REGISTRO ⬇️
+      setupAxiosHeaders(token);
+      
       setUser(user);
       
       return { success: true };
@@ -68,7 +88,7 @@ export function AuthProvider({ children }) {
   const logout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user');
-    delete axios.defaults.headers.common['Authorization'];
+    setupAxiosHeaders(null); // ⬅️ REMOVER HEADER
     setUser(null);
   };
 
