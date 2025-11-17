@@ -1,12 +1,13 @@
 # posts/views.py
 
 from rest_framework import generics, permissions, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.db.models import Q
 from .models import Post, Like, Comment
 from .serializers import PostSerializer, PostCreateSerializer, LikeSerializer, CommentSerializer
 from relationships.models import Relationship # ⬅️ COMENTE ESTA LINHA
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 class PostListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -18,9 +19,12 @@ class PostListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         # Posts do usuário + de quem ele segue
-        following = Relationship.objects.filter(follower=self.request.user).values_list('followed', flat=True)
-        return Post.objects.filter(Q(user=self.request.user) | Q(user__in=following))
+        # following = Relationship.objects.filter(follower=self.request.user).values_list('followed', flat=True)
+        # return Post.objects.filter(Q(user=self.request.user) | Q(user__in=following))
 
+        # ⬇️ USE ESTA VERSÃO SIMPLES TEMPORARIAMENTE ⬇️
+        return Post.objects.all()
+    
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
@@ -60,3 +64,55 @@ class CommentCreateView(generics.CreateAPIView):
         post_id = self.kwargs.get('post_id')
         post = Post.objects.get(id=post_id)
         serializer.save(user=self.request.user, post=post)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def debug_post_list(request):
+    """View de debug SIMPLES para verificar autenticação"""
+    print("=" * 50)
+    print("🔐 DEBUG POSTS API")
+    print("=" * 50)
+    
+    # Verificar informações básicas
+    print(f"👤 Usuário: {request.user}")
+    print(f"👤 Autenticado?: {request.user.is_authenticated}")
+    print(f"👤 ID: {request.user.id}")
+    print(f"👤 Username: {request.user.username}")
+    
+    # Verificar header de autorização
+    auth_header = request.META.get('HTTP_AUTHORIZATION')
+    print(f"📋 Authorization header: {auth_header}")
+    
+    if auth_header:
+        print("✅ Header Authorization encontrado")
+    else:
+        print("❌ Header Authorization NÃO encontrado")
+    
+    # Listar alguns headers importantes
+    important_headers = ['HTTP_AUTHORIZATION', 'HTTP_ORIGIN', 'HTTP_HOST']
+    print("📋 Headers importantes:")
+    for header in important_headers:
+        value = request.META.get(header)
+        if value:
+            print(f"   {header}: {value}")
+    
+    # Verificar se há posts
+    posts = Post.objects.all()
+    print(f"📝 Posts no banco: {posts.count()}")
+    
+    # Serializar e retornar
+    serializer = PostSerializer(posts, many=True)
+    
+    print("✅ Retornando resposta")
+    print("=" * 50)
+    
+    return Response({
+        'debug_info': {
+            'user': request.user.username,
+            'authenticated': request.user.is_authenticated,
+            'user_id': request.user.id,
+            'posts_count': posts.count(),
+            'auth_header_received': bool(auth_header)
+        },
+        'posts': serializer.data
+    })
