@@ -4,7 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
 import Register from './components/Register';
 import Feed from './components/Feed';
-import Profile from './components/Profile';
+// import Profile from './components/Profile';
 import Navbar from './components/Navbar';
 import './App.css';
 
@@ -25,18 +25,6 @@ function App() {
               <ProtectedRoute>
                 <Navbar />
                 <Feed />
-              </ProtectedRoute>
-            } />
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <Navbar />
-                <Profile />
-              </ProtectedRoute>
-            } />
-            <Route path="/user/:username" element={
-              <ProtectedRoute>
-                <Navbar />
-                <Profile />
               </ProtectedRoute>
             } />
           </Routes>
