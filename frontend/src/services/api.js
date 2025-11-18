@@ -41,7 +41,7 @@ export const postsAPI = {
   getPosts: async () => {
     const response = await api.get('/posts/');
     // console.log('✅ [API] Posts recebidos:', response.data);
-    return response.data.posts; // devolve direto o array
+    return response.data; // devolve direto o array
   },
   createPost: async (postData) => {
     const response = await api.post('/posts/', postData);

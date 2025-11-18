@@ -1,3 +1,5 @@
+// src/components/CreatePost.js
+
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { postsAPI } from '../services/api';
@@ -25,10 +27,11 @@ function CreatePost({ onNewPost }) {
     setError('');
 
     try {
-      const response = await postsAPI.createPost({ content });
-      onNewPost(response.data);
+      const newPost = await postsAPI.createPost({ content });
+      onNewPost(newPost);
       setContent('');
       setError('');
+      console.log("Novo post criado:", newPost);
     } catch (error) {
       setError('Erro ao criar post. Tente novamente.');
       console.error('Error creating post:', error);

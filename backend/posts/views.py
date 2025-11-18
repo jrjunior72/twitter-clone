@@ -7,7 +7,6 @@ from django.db.models import Q
 from .models import Post, Like, Comment
 from .serializers import PostSerializer, PostCreateSerializer, LikeSerializer, CommentSerializer
 from relationships.models import Relationship # ⬅️ COMENTE ESTA LINHA
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 class PostListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -26,7 +25,15 @@ class PostListCreateView(generics.ListCreateAPIView):
         return Post.objects.all()
     
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        post = serializer.save(user=self.request.user)
+        # Retorna o objeto completo usando PostSerializer
+        self.created_post = post
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        # Substitui o retorno pelo PostSerializer completo
+        response.data = PostSerializer(self.created_post, context={'request': request}).data
+        return response
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
