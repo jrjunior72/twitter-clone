@@ -1,3 +1,5 @@
+// src/components/Feed.js
+
 import React, { useState, useEffect } from 'react';
 import { postsAPI } from '../services/api';
 import Post from './Post';
@@ -15,7 +17,7 @@ function Feed() {
     const fetchPosts = async () => {
         try {
             const posts = await postsAPI.getPosts();
-            // console.log("Posts API response:", posts);
+            console.log("Posts API response:", posts);
             setPosts(posts || []);
         } catch (error) {
             setError('Erro ao carregar posts');
@@ -26,7 +28,8 @@ function Feed() {
     };
 
     const handleNewPost = (post) => {
-        setPosts([post, ...posts]);
+        if (!post) return; // evita undefined
+        setPosts((prevPosts) => [post, ...prevPosts]);
     };
 
     const handleLike = async (postId) => {
