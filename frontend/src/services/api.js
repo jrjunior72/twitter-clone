@@ -38,14 +38,14 @@ const getAuthHeaders = () => {
 };
 
 export const postsAPI = {
-  getPosts: async () => {
-    const response = await api.get('/posts/');
+  getPosts: async (page = 1) => {
+    const response = await api.get(`/posts/?page=${page}`);
     // console.log('✅ [API] Posts recebidos:', response.data);
     return response.data; // devolve direto o array
   },
   createPost: async (postData) => {
     const response = await api.post('/posts/', postData);
-    return response.data;
+    return response.data; // retorna objeto com count, next, previous, results
   },
   likePost: async (postId) => {
     const response = await api.post(`/posts/${postId}/like/`);

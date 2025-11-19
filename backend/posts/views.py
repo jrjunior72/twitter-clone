@@ -1,6 +1,7 @@
 # posts/views.py
 
 from rest_framework import generics, permissions, status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.db.models import Q
@@ -10,6 +11,7 @@ from relationships.models import Relationship # ⬅️ COMENTE ESTA LINHA
 
 class PostListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = PageNumberPagination  # ✅ aqui está a correção
     
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -17,12 +19,7 @@ class PostListCreateView(generics.ListCreateAPIView):
         return PostSerializer
 
     def get_queryset(self):
-        # Posts do usuário + de quem ele segue
-        # following = Relationship.objects.filter(follower=self.request.user).values_list('followed', flat=True)
-        # return Post.objects.filter(Q(user=self.request.user) | Q(user__in=following))
-
-        # ⬇️ USE ESTA VERSÃO SIMPLES TEMPORARIAMENTE ⬇️
-        return Post.objects.all()
+        return Post.objects.all().order_by('-created_at')
     
     def perform_create(self, serializer):
         post = serializer.save(user=self.request.user)
