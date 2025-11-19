@@ -1,6 +1,6 @@
 // src/components/Feed.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { postsAPI } from '../services/api';
 import Post from './Post';
 import CreatePost from './CreatePost';
@@ -8,17 +8,27 @@ import CreatePost from './CreatePost';
 function Feed() {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(''); // ⬅️ FALTANDO ESTA LINHA!
+    const [error, setError] = useState(''); 
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
 
     useEffect(() => {
-        fetchPosts();
-    }, []);
+        fetchPosts(page);
+    }, [page]);
 
-    const fetchPosts = async () => {
+    const fetchPosts = async (page) => {
         try {
-            const posts = await postsAPI.getPosts();
-            console.log("Posts API response:", posts);
-            setPosts(posts || []);
+            const data = await postsAPI.getPosts(page);
+            console.log("Posts API response:", data);
+            // acumula posts ao invés de substituir
+            setPosts((prevPosts) => {
+                const merged = [...prevPosts, ...data.results];
+                // remove duplicados pelo id
+                const unique = Array.from(new Map(merged.map(p => [p.id, p])).values());
+                return unique;
+            });
+            setHasMore(!!data.next);
+
         } catch (error) {
             setError('Erro ao carregar posts');
             console.error('Error fetching posts:', error);
@@ -51,14 +61,27 @@ function Feed() {
         }
     };
 
-    if (loading) {
+    const observer = useRef();
+    // Observa o último post da lista
+    const lastPostRef = useCallback(node => {
+        if (loading) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasMore) {
+                setPage(prevPage => prevPage + 1);
+            }
+        });
+        if (node) observer.current.observe(node);
+    }, [loading, hasMore]);
+
+    if (loading && posts.length === 0) {
         return (
-        <div className="feed">
-            <div className="feed-header">
-            <h2>Home</h2>
+            <div className="feed">
+                <div className="feed-header">
+                    <h2>Home</h2>
+                </div>
+                <div className="loading">Carregando posts...</div>
             </div>
-            <div className="loading">Carregando posts...</div>
-        </div>
         );
     }
 
@@ -87,15 +110,28 @@ function Feed() {
                     <p>Nenhum post ainda. Seja o primeiro a postar!</p>
                 </div>
                 ) : (
-                posts.map(post => (
-                    <Post 
-                    key={post.id} 
-                    post={post} 
-                    onLike={handleLike}
-                    />
-                ))
-                )}
+                posts.map((post, index) => {
+                    if (index === posts.length - 1) {
+                        return (
+                            <div ref={lastPostRef} key={post.id}>
+                                <Post post={post} onLike={handleLike} />
+                            </div>
+                        );
+                    } else {
+                        return (
+                            <Post
+                                key={post.id} 
+                                post={post} 
+                                onLike={handleLike}
+                            />
+                        );
+                    }
+                })
+            )}
             </div>
+
+        {loading && <div className="loading">Carregando mais posts...</div>}      
+                
         </div>
     );
 }
