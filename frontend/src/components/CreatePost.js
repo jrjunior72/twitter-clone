@@ -1,6 +1,6 @@
 // src/components/CreatePost.js
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { postsAPI } from '../services/api';
 
@@ -9,28 +9,50 @@ function CreatePost({ onNewPost }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { user } = useAuth();
+  const [image, setImage] = useState(null);
+  const fileInputRef = useRef(null);   // ✅ ref para o input de arquivo
+  const [preview, setPreview] = useState(null);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!content.trim()) {
+    if (!content.trim() && !image) {
       setError('O post não pode estar vazio');
       return;
     }
-
+    
     if (content.length > 280) {
       setError('O post não pode ter mais de 280 caracteres');
       return;
     }
-
+    
     setLoading(true);
     setError('');
-
+    
     try {
-      const newPost = await postsAPI.createPost({ content });
+      const formData = new FormData();
+      formData.append("content", content);
+      if (image) formData.append("image", image);
+    
+      const newPost = await postsAPI.createPost(formData);
+      // const newPost = await postsAPI.createPost({ content });
       onNewPost(newPost);
+
+      // resetar estados
       setContent('');
+      setImage(null);
       setError('');
+      if (preview) URL.revokeObjectURL(preview); // libera a URL temporária
+      setPreview(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';  // ✅ limpa o input
       console.log("Novo post criado:", newPost);
     } catch (error) {
       setError('Erro ao criar post. Tente novamente.');
@@ -62,7 +84,42 @@ function CreatePost({ onNewPost }) {
             maxLength={280}
             disabled={loading}
           />
-          {error && <div className="error-message" style={{marginTop: '8px'}}>{error}</div>}
+          {/* Botão de upload estilizado */}
+          <div className='file-upload'>
+            <input 
+              type="file" 
+              accept="image/*" 
+              onChange={handleImageChange}
+              disabled={loading}
+              ref={fileInputRef}
+              style={{ display: 'none' }}   // ✅ escondemos o input
+              id="fileInput"
+            />
+            <label htmlFor="fileInput" className="upload-button">
+              {/* ou substitua por um ícone SVG moderno */}
+              <svg xmlns="http://www.w3.org/2000/svg" 
+                  fill="none" viewBox="0 0 24 24" 
+                  stroke="currentColor" width="24" height="24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                      d="M3 7a2 2 0 012-2h3l2-2h4l2 2h3a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                      d="M12 11a3 3 0 100-6 3 3 0 000 6zM3 20l6-6 4 4 8-8" />
+              </svg>
+            </label>
+            {/* Pré-visualização da imagem */}
+            {preview && (
+              <div className="image-preview">
+                <img src={preview} alt="Pré-visualização" className="preview-img" />
+                <button 
+                  type="button" 
+                  className="remove-image" 
+                  onClick={() => { setImage(null); setPreview(null); fileInputRef.current.value = ''; }}
+                >
+                  ❌ Remover
+                </button>
+              </div>)}
+            {error && <div className="error-message" style={{marginTop: '8px'}}>{error}</div>}
+          </div>
         </div>
       </form>
       
@@ -71,15 +128,19 @@ function CreatePost({ onNewPost }) {
           color: characterCount > 260 ? '#f91880' : '#8899a6',
           fontSize: '14px'
         }}>
-          {characterCount}/280
+          {characterCount}/{maxCharacters}
         </div>
         <button 
           type="submit" 
           className="post-button"
           onClick={handleSubmit}
-          disabled={loading || !content.trim() || content.length > 280}
+          disabled={loading || (!content.trim() && !image) || content.length > 280}
         >
-          {loading ? 'Postando...' : 'Postar'}
+          {loading ? (
+            <div className="spinner"></div>   // ✅ spinner simples
+          ) : (
+            'Postar'
+          )}
         </button>
       </div>
     </div>

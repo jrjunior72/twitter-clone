@@ -472,3 +472,60 @@ button:disabled {
   border-radius: 20px;
   margin-top: 1rem;
 }
+
+.file-upload {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.upload-button {
+  cursor: pointer;
+  font-size: 20px;
+  color: #1da1f2; /* azul estilo Twitter */
+  padding: 6px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.upload-button:hover {
+  background: rgba(29,161,242,0.1);
+}
+
+.image-preview {
+  margin-top: 10px;
+  position: relative;
+}
+
+.preview-img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.remove-image {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #1da1f2;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
