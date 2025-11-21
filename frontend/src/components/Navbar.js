@@ -23,6 +23,7 @@ function Navbar() {
           {user ? (
             <>
               <span className="nav-user">Olá, {user.username}!</span>
+              <Link to="/profile" className="nav-link">Perfil</Link> {/* ✅ novo link */}
               <button onClick={handleLogout} className="nav-button">
                 Sair
               </button>

@@ -1,3 +1,5 @@
+# users/views.py
+
 from rest_framework import status, generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -20,7 +22,7 @@ def register_user(request):
         user = serializer.save()
         token, created = Token.objects.get_or_create(user=user)
         return Response({
-            'user': UserProfileSerializer(user).data,
+            'user': UserProfileSerializer(user, context={'request': request}).data,
             'token': token.key,
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -35,7 +37,7 @@ def login_user(request):
     if user:
         token, created = Token.objects.get_or_create(user=user)
         return Response({
-            'user': UserProfileSerializer(user).data,
+            'user': UserProfileSerializer(user, context={'request': request}).data,
             'token': token.key,
         })
     return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -43,8 +45,29 @@ def login_user(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_profile(request):
-    serializer = UserProfileSerializer(request.user)
+    serializer = UserProfileSerializer(request.user, context={'request': request})
     return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_by_username(request, username):
+    try:
+        user = CustomUser.objects.get(username=username)
+        serializer = UserProfileSerializer(user, context={'request': request})
+        return Response(serializer.data)
+    except CustomUser.DoesNotExist:
+        return Response({'error': 'Usuário não encontrado'}, status=404)
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_profile(request):
+    user = request.user
+    serializer = UserProfileSerializer(user, data=request.data, partial=True, context={'request': request})
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # ⬇️⬇️⬇️ ADICIONE ESTA CLASSE NO FINAL ⬇️⬇️⬇️
 class UserListView(generics.ListAPIView):
