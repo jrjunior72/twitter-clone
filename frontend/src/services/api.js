@@ -29,6 +29,7 @@ export const authAPI = {
   login: (credentials) => api.post('/auth/login/', credentials),
   register: (userData) => api.post('/auth/register/', userData),
   getProfile: () => api.get('/auth/profile/'),
+  updateProfile: (profileData) => api.patch('/auth/profile/', profileData), // ⬅️ NOVO
 };
 
 const getAuthHeaders = () => {
@@ -61,8 +62,15 @@ export const postsAPI = {
   },
 };
 
-
-
+// ADICIONADO ESTE BLOCO-----------------------------------------------------
+export const usersAPI = {
+  getUserByUsername: (username) => api.get(`/users/${username}/`),
+  getUserById: (userId) => api.get(`/users/${userId}/`),
+  searchUsers: (query) => api.get(`/users/search/?q=${query}`),
+  getFollowers: (username) => api.get(`/users/profile/${username}/followers/`),
+  getFollowing: (username) => api.get(`/users/profile/${username}/following/`),
+};
+//----------------------------------------------------------------------------
 
 export const relationshipsAPI = {
   followUser: (username) => api.post(`/relationships/follow/${username}/`),
