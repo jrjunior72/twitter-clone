@@ -4,21 +4,23 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from '../contexts/AuthContext';
 import Modal from "./Modal";
-// src/components/Profile.js - ADICIONAR
-import { usersAPI, relationshipsAPI, authAPI } from '../services/api';
+import { usersAPI } from '../services/api';
 
 function Profile() {
-    const { user: loggedUser } = useAuth(); // usuário logado
+    const { user: loggedUser, updateProfile } = useAuth(); // usuário logado
     const { username } = useParams(); // pega o username da URL
     const navigate = useNavigate();
-
     const [user, setUser] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         first_name: "",
         last_name: "",
         email: "",
+        bio: "",                // ⬅️ NOVO CAMPO
+        profile_picture: null,  // ⬅️ NOVO CAMPO
     });
+
+    const [imagePreview, setImagePreview] = useState(null);  // ⬅️ PREVIEW DA IMAGEM
 
     //Sistema de seguidores/seguindo
     const [isFollowing, setIsFollowing] = useState(false);
@@ -33,13 +35,14 @@ function Profile() {
         }
     }, [username, loggedUser, navigate]);
 
-    // Preenche formData quando user muda
+    // Preenche formData quando user muda - ATUALIZADO
     useEffect(() => {
         if (user) {
             setFormData({
                 first_name: user.first_name || "",
                 last_name: user.last_name || "",
                 email: user.email || "",
+                bio: user.bio || "",                    // ⬅️ INICIALIZAR BIO
             });
         }
     }, [user]);
@@ -57,21 +60,38 @@ function Profile() {
                 if (!username || username === loggedUser?.username) {
                     userData = loggedUser;
                 } else {
-                    // Busca perfil de outro usuário via API service
-                    userData = await usersAPI.getUserByUsername(username);
+                    // ⬇️ CORREÇÃO: A API retorna { data } - precisamos extrair
+                    const response = await usersAPI.getUserByUsername(username);
+                    userData = response.data; // ⬅️ EXTRAIA OS DADOS
+                    console.log("📥 Dados do usuário recebidos:", userData);
                 }
                 
                 setUser(userData);
                 
                 // Atualiza dados de follow se disponíveis no response
-                if (userData.followers_count !== undefined) {
-                    setFollowersCount(userData.followers_count);
-                    setFollowingCount(userData.following_count);
-                    setIsFollowing(userData.is_following || false);
+                if (userData) {
+                    // Atualiza contadores se disponíveis
+                    if (userData.followers_count !== undefined) {
+                        setFollowersCount(userData.followers_count);
+                    }
+                    if (userData.following_count !== undefined) {
+                        setFollowingCount(userData.following_count);
+                    }
+                    if (userData.is_following !== undefined) {
+                        setIsFollowing(userData.is_following);
+                    }
+                    
+                    // ⬇️ SE NÃO VÊM NA RESPOSTA, FAÇA UMA CHAMADA SEPARADA
+                    if (!isOwnProfile && userData.id) {
+                        try {
+                            const followResponse = await usersAPI.checkFollowStatus(userData.id);
+                            setIsFollowing(followResponse.data.is_following || false);
+                        } catch (followError) {
+                        }
+                    }
                 }
                 
             } catch (error) {
-                console.error("Erro ao carregar perfil:", error);
                 setUser(null);
             } finally {
                 setLoading(false);
@@ -99,10 +119,12 @@ function Profile() {
                 
                 if (response.ok) {
                     const data = await response.json();
-                    setPostsCount(data.count || data.results?.length || 0);
+
+                    // ⬇️ VERIFIQUE DIFERENTES ESTRUTURAS DE RESPOSTA
+                    const count = data.count || data.results?.length || 0;
+                    setPostsCount(count);
                 }
             } catch (error) {
-                console.error('Erro ao contar posts:', error);
                 setPostsCount(0);
             }
         };
@@ -110,17 +132,16 @@ function Profile() {
         countUserPosts();
     }, [user]);
 
-
     const handleFollow = async () => {
         if (!user) return;
         
         try {
-            await relationshipsAPI.followUser(user.id);
+            // ⬇️ CORREÇÃO: Use usersAPI em vez de relationshipsAPI
+            await usersAPI.followUser(user.id);
             setIsFollowing(true);
             setFollowersCount(prev => prev + 1);
         } catch (error) {
             console.error('Erro ao seguir usuário:', error);
-            alert('Erro ao seguir usuário');
         }
     };
 
@@ -128,27 +149,78 @@ function Profile() {
         if (!user) return;
         
         try {
-            await relationshipsAPI.unfollowUser(user.id);
+            // ⬇️ CORREÇÃO: Use usersAPI em vez de relationshipsAPI
+            await usersAPI.unfollowUser(user.id);
             setIsFollowing(false);
             setFollowersCount(prev => prev - 1);
         } catch (error) {
             console.error('Erro ao parar de seguir:', error);
-            alert('Erro ao parar de seguir');
         }
     };
 
+    // Handle file upload para foto de perfil
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setFormData({
+                ...formData,
+                profile_picture: file
+            });
+            
+            // Criar preview da imagem
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // Remove foto de perfil
+    const handleRemoveImage = () => {
+        setFormData({
+            ...formData,
+            profile_picture: null
+        });
+        setImagePreview(null);
+    };
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
         
         try {
-            // Usando authAPI para atualizar perfil
-            const updatedUser = await authAPI.updateProfile(formData);
-            setUser(updatedUser);
-            setModalOpen(false);
-            alert('Perfil atualizado com sucesso!');
+            // ⬇️ CORREÇÃO: Chamar updateProfile do AuthContext
+            const submitData = new FormData();
+
+            // Adicionar campos de texto
+            submitData.append('first_name', formData.first_name);
+            submitData.append('last_name', formData.last_name);
+            submitData.append('email', formData.email);
+            submitData.append('bio', formData.bio);
+
+            // Adicionar arquivo se existir
+            if (formData.profile_picture && typeof formData.profile_picture !== 'string') {
+                submitData.append('profile_picture', formData.profile_picture);
+            }
+
+            // ⬇️ CORREÇÃO: Chamar updateProfile do AuthContext
+            const result = await updateProfile(submitData);
+            
+            if (result.success) {
+                setUser(result.user);
+                setModalOpen(false);
+                alert('Perfil atualizado com sucesso!');
+                
+                // Atualizar preview se necessário
+                if (result.user.profile_picture) {
+                    setImagePreview(result.user.profile_picture);
+                }
+            } else {
+                alert(`Erro ao atualizar perfil: ${result.error}`);
+            }
+
         } catch (error) {
             console.error('Erro ao atualizar perfil:', error);
-            alert('Erro ao atualizar perfil');
         }
     };
 
@@ -279,6 +351,59 @@ return (
             <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
                 <form onSubmit={handleSubmit} className="modal-form-twitter">
                     <h3>Editar perfil</h3>
+
+                    {/* UPLOAD DE FOTO DE PERFIL */}
+                    <div className="form-group-image">
+                        <label className="image-upload-label">Foto de perfil</label>
+                        <div className="image-upload-container">
+                            <div className="image-preview">
+                                <img 
+                                    src={imagePreview || user?.profile_picture || '/default-avatar.png'} 
+                                    alt="Preview" 
+                                    className="image-preview-img"
+                                />
+                            </div>
+                            <div className="image-upload-controls">
+                                <label htmlFor="profile-picture" className="btn-upload">
+                                    Escolher imagem
+                                </label>
+                                <input
+                                    id="profile-picture"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="file-input"
+                                />
+                                {imagePreview && (
+                                    <button 
+                                        type="button" 
+                                        onClick={handleRemoveImage}
+                                        className="btn-remove-image"
+                                    >
+                                        Remover
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* BIO */}
+                    <div className="form-group">
+                        <label>Bio</label>
+                        <textarea
+                            placeholder="Conte um pouco sobre você..."
+                            value={formData.bio}
+                            onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                            className="form-textarea"
+                            rows="3"
+                            maxLength="500"
+                        />
+                        <div className="char-counter">
+                            {formData.bio.length}/500
+                        </div>
+                    </div>
+
+                    {/* CAMPOS EXISTENTES */}
                     <div className="form-group">
                         <input
                             type="text"

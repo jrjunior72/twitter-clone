@@ -19,7 +19,24 @@ class PostListCreateView(generics.ListCreateAPIView):
         return PostSerializer
 
     def get_queryset(self):
-        return Post.objects.all().order_by('-created_at')
+
+        import logging
+        logger = logging.getLogger(__name__)
+
+        queryset = Post.objects.all()
+        
+        # Aplicar filtro por usuário se o parâmetro existir
+        user_id = self.request.query_params.get('user')
+        if user_id:
+            try:
+                queryset = queryset.filter(user_id=int(user_id))
+                logger.info(f"Posts filtrados para usuário {user_id}")
+            except (ValueError, TypeError):
+                logger.warning(f"ID de usuário inválido: {user_id}", exc_info=True)
+                # Ignora parâmetro user_id inválido
+                pass
+        
+        return queryset.order_by('-created_at')
     
     def perform_create(self, serializer):
         post = serializer.save(user=self.request.user)

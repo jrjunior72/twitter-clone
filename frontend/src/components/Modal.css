@@ -125,6 +125,116 @@
     text-align: center;
 }
 
+/* Grupo de upload de imagem */
+.form-group-image {
+    margin-bottom: 20px;
+}
+
+.image-upload-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #0f1419;
+}
+
+.image-upload-container {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.image-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #e1e8ed;
+}
+
+.image-preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-upload-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.btn-upload {
+    padding: 8px 16px;
+    background: #f7f9fa;
+    color: #0f1419;
+    border: 1px solid #cfd9de;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.btn-upload:hover {
+    background: #e8f5fe;
+    border-color: #1d9bf0;
+}
+
+.file-input {
+    display: none;
+}
+
+.btn-remove-image {
+    padding: 6px 12px;
+    background: #fff0f0;
+    color: #f4212e;
+    border: 1px solid #f4212e;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.btn-remove-image:hover {
+    background: #f4212e;
+    color: white;
+}
+
+/* Campo de texto para bio */
+.form-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cfd9de;
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    box-sizing: border-box;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: #1d9bf0;
+}
+
+.char-counter {
+    text-align: right;
+    font-size: 12px;
+    color: #536471;
+    margin-top: 4px;
+}
+
+/* Labels dos campos */
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #0f1419;
+    font-size: 14px;
+}
+
 /* .modal-overlay {
     position: fixed;
     top: 0;

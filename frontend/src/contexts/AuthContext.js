@@ -2,6 +2,7 @@
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
+import { authAPI } from '../services/api'; // ⬅️ IMPORTE A API
 
 const AuthContext = createContext();
 
@@ -28,30 +29,22 @@ export function AuthProvider({ children }) {
     
     if (token && userData) {
       setUser(JSON.parse(userData));
-      axios.defaults.headers.common['Authorization'] = `Token ${token}`;
+      // O interceptor do axios já cuida do header agora
+      // axios.defaults.headers.common['Authorization'] = `Token ${token}`;
     }
     setLoading(false);
   }, []);
 
   const login = async (username, password) => {
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/login/', {
-        username,
-        password
-      });
-      console.log("Login response:", response.data);
-
+      // ⬇️ USE A API UNIFICADA ⬇️
+      const response = await authAPI.login({ username, password });
       const { user, token } = response.data;
       
       localStorage.setItem('access_token', token);
       localStorage.setItem('user', JSON.stringify(user));
-
-      // ⬇️ CONFIGURAR AXIOS APÓS LOGIN ⬇️
-      setupAxiosHeaders(token);
       
       setUser(user);
-      
-      console.log('✅ Login realizado - Token configurado');
       
       return { success: true };
     } catch (error) {
@@ -64,15 +57,12 @@ export function AuthProvider({ children }) {
 
   const register = async (userData) => {
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/register/', userData);
-      
+      // ⬇️ USE A API UNIFICADA ⬇️
+      const response = await authAPI.register(userData);
       const { user, token } = response.data;
       
       localStorage.setItem('access_token', token);
       localStorage.setItem('user', JSON.stringify(user));
-
-      // ⬇️ CONFIGURAR AXIOS APÓS REGISTRO ⬇️
-      setupAxiosHeaders(token);
       
       setUser(user);
       
@@ -85,6 +75,43 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // ⬇️ NOVA FUNÇÃO PARA ATUALIZAR PERFIL ⬇️
+  const updateProfile = async (profileData) => {
+    try {
+      
+      let response;
+      
+      // Se for FormData (com arquivo), usar axios diretamente com headers específicos
+      if (profileData instanceof FormData) {
+        const token = localStorage.getItem('access_token');
+        response = await axios.patch(
+          'http://localhost:8080/api/auth/profile/update/',
+          profileData,
+          {
+            headers: {
+              'Authorization': `Token ${token}`,
+              'Content-Type': 'multipart/form-data', // ⬅️ IMPORTANTE para FormData
+            },
+          }
+        );
+      } else {
+        // Se for JSON normal, usar a API
+        response = await authAPI.updateProfile(profileData);
+      }
+      
+      // Atualiza o usuário no estado e localStorage
+      const updatedUser = response.data;
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      return { success: true, user: updatedUser };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error.response?.data || 'Erro ao atualizar perfil' 
+      };
+    }
+  };
   const logout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user');
@@ -96,6 +123,7 @@ export function AuthProvider({ children }) {
     user,
     login,
     register,
+    updateProfile, // ⬅️ EXPORTE A NOVA FUNÇÃO
     logout,
     loading
   };
