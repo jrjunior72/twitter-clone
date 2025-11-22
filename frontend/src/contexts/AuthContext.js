@@ -1,5 +1,8 @@
+// contexts/AuthContext.js
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
+import { authAPI } from '../services/api'; // ⬅️ IMPORTE A API
 
 const AuthContext = createContext();
 
@@ -11,29 +14,36 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ⬇️ CONFIGURAR AXIOS GLOBALMENTE ⬇️
+  const setupAxiosHeaders = (token) => {
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Token ${token}`;
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     const userData = localStorage.getItem('user');
     
     if (token && userData) {
       setUser(JSON.parse(userData));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      // O interceptor do axios já cuida do header agora
+      // axios.defaults.headers.common['Authorization'] = `Token ${token}`;
     }
     setLoading(false);
   }, []);
 
   const login = async (username, password) => {
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/login/', {
-        username,
-        password
-      });
-
-      const { user, access } = response.data;
+      // ⬇️ USE A API UNIFICADA ⬇️
+      const response = await authAPI.login({ username, password });
+      const { user, token } = response.data;
       
-      localStorage.setItem('access_token', access);
+      localStorage.setItem('access_token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
+      
       setUser(user);
       
       return { success: true };
@@ -47,13 +57,13 @@ export function AuthProvider({ children }) {
 
   const register = async (userData) => {
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/register/', userData);
+      // ⬇️ USE A API UNIFICADA ⬇️
+      const response = await authAPI.register(userData);
+      const { user, token } = response.data;
       
-      const { user, access } = response.data;
-      
-      localStorage.setItem('access_token', access);
+      localStorage.setItem('access_token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
+      
       setUser(user);
       
       return { success: true };
@@ -65,10 +75,47 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // ⬇️ NOVA FUNÇÃO PARA ATUALIZAR PERFIL ⬇️
+  const updateProfile = async (profileData) => {
+    try {
+      
+      let response;
+      
+      // Se for FormData (com arquivo), usar axios diretamente com headers específicos
+      if (profileData instanceof FormData) {
+        const token = localStorage.getItem('access_token');
+        response = await axios.patch(
+          'http://localhost:8080/api/auth/profile/update/',
+          profileData,
+          {
+            headers: {
+              'Authorization': `Token ${token}`,
+              'Content-Type': 'multipart/form-data', // ⬅️ IMPORTANTE para FormData
+            },
+          }
+        );
+      } else {
+        // Se for JSON normal, usar a API
+        response = await authAPI.updateProfile(profileData);
+      }
+      
+      // Atualiza o usuário no estado e localStorage
+      const updatedUser = response.data;
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      return { success: true, user: updatedUser };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error.response?.data || 'Erro ao atualizar perfil' 
+      };
+    }
+  };
   const logout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user');
-    delete axios.defaults.headers.common['Authorization'];
+    setupAxiosHeaders(null); // ⬅️ REMOVER HEADER
     setUser(null);
   };
 
@@ -76,6 +123,7 @@ export function AuthProvider({ children }) {
     user,
     login,
     register,
+    updateProfile, // ⬅️ EXPORTE A NOVA FUNÇÃO
     logout,
     loading
   };

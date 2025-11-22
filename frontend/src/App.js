@@ -1,3 +1,5 @@
+//  src/App.js
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -6,6 +8,7 @@ import Register from './components/Register';
 import Feed from './components/Feed';
 import Profile from './components/Profile';
 import Navbar from './components/Navbar';
+import Layout from './components/Layout';
 import './App.css';
 
 function ProtectedRoute({ children }) {
@@ -19,24 +22,28 @@ function App() {
       <Router>
         <div className="App">
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Navbar />
-                <Feed />
-              </ProtectedRoute>
-            } />
+            {/* Rota para o perfil do usuário logado */}
             <Route path="/profile" element={
               <ProtectedRoute>
-                <Navbar />
-                <Profile />
+                <Layout>
+                  <Profile />
+                </Layout>
               </ProtectedRoute>
             } />
-            <Route path="/user/:username" element={
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/:username" element={
               <ProtectedRoute>
-                <Navbar />
-                <Profile />
+                <Layout>
+                  <Profile />
+                </Layout>
+              </ProtectedRoute>
+            } />    
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Feed />
+                </Layout>
               </ProtectedRoute>
             } />
           </Routes>
