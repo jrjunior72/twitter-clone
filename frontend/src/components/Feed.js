@@ -18,8 +18,12 @@ function Feed() {
 
     const fetchPosts = async (page) => {
         try {
-            const data = await postsAPI.getPosts(page);
-            console.log("Posts API response:", data);
+            // Substituido por getPersonalFeed
+            // const data = await postsAPI.getPosts(page); 
+            // console.log("Posts API response:", data);
+            // 🔄 MUDANÇA AQUI: usar getPersonalFeed em vez de getPosts
+            const data = await postsAPI.getPersonalFeed(page);
+            console.log("📱 Feed personalizado:", data);            
             // acumula posts ao invés de substituir
             setPosts((prevPosts) => {
                 const merged = [...prevPosts, ...data.results];

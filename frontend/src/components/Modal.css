@@ -1,6 +1,131 @@
 /* src/Modal.css */
 
+/* Modal.css - VERSÃO COMPLETA */
+
+/* Overlay e Container */
 .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #192734;
+    padding: 24px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 400px;
+    color: white;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+/* Modal.css - MAIS ESPECÍFICO */
+.modal-overlay .modal-content .modal-close {
+    position: absolute !important;
+    top: 12px !important;
+    right: 12px !important;
+    background: none !important;
+    border: none !important;
+    font-size: 20px !important;
+    color: #536471 !important;
+    cursor: pointer !important;
+    padding: 4px !important;
+    /* border-radius: 50% !important; */
+    
+    /* ⬇️ RESET DOS ESTILOS GLOBAIS DO App.css */
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    display: block !important;
+}
+
+.modal-overlay .modal-content .modal-close:hover {
+    background: #f7f9fa !important;
+    color: #0f1419 !important;
+}
+
+/* Estilos do Formulário (MOVIDOS DO App.css) */
+.modal-form {
+    padding: 20px;
+}
+
+.modal-form-twitter h3 {
+    margin-bottom: 20px;
+    text-align: center;
+    color: #fff;
+}
+
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cfd9de;
+    border-radius: 4px;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #1d9bf0;
+}
+
+.form-actions {
+    text-align: center;
+}
+
+.btn-primary {
+    padding: 12px 24px;
+    background: #1d9bf0;
+    color: white;
+    border: none;
+    /* border-radius: 24px; */
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background: #1a8cd8;
+}
+
+/* Estilos específicos para formulários no modal */
+.modal-form input {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #cfd9de;
+    background-color: white;
+    color: #0f1419;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+.modal-form input:focus {
+    outline: none;
+    border-color: #1d9bf0;
+}
+
+.modal-title {
+    margin-bottom: 20px;
+    font-size: 20px;
+    color: #0f1419;
+    text-align: center;
+}
+
+/* .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -48,4 +173,4 @@
     margin-bottom: 20px;
     font-size: 20px;
     color: #1da1f2;
-}
+} */

@@ -29,6 +29,7 @@ export const authAPI = {
   login: (credentials) => api.post('/auth/login/', credentials),
   register: (userData) => api.post('/auth/register/', userData),
   getProfile: () => api.get('/auth/profile/'),
+  updateProfile: (profileData) => api.patch('/auth/profile/', profileData), // ⬅️ NOVO
 };
 
 const getAuthHeaders = () => {
@@ -43,6 +44,14 @@ export const postsAPI = {
     // console.log('✅ [API] Posts recebidos:', response.data);
     return response.data; // devolve direto o array
   },
+
+  // 🔄 NOVO ENDPOINT - Feed personalizado
+  getPersonalFeed: async (page = 1) => {
+    const response = await api.get(`/posts/feed/?page=${page}`);
+    return response.data;
+  },
+  // ... resto permanece igual
+
   createPost: async (postData) => {
     const response = await api.post('/posts/', postData);
     return response.data; // retorna objeto com count, next, previous, results
@@ -53,6 +62,15 @@ export const postsAPI = {
   },
 };
 
+// ADICIONADO ESTE BLOCO-----------------------------------------------------
+export const usersAPI = {
+  getUserByUsername: (username) => api.get(`/users/${username}/`),
+  getUserById: (userId) => api.get(`/users/${userId}/`),
+  searchUsers: (query) => api.get(`/users/search/?q=${query}`),
+  getFollowers: (username) => api.get(`/users/profile/${username}/followers/`),
+  getFollowing: (username) => api.get(`/users/profile/${username}/following/`),
+};
+//----------------------------------------------------------------------------
 
 export const relationshipsAPI = {
   followUser: (username) => api.post(`/relationships/follow/${username}/`),
