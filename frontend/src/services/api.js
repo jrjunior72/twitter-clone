@@ -43,6 +43,14 @@ export const postsAPI = {
     // console.log('✅ [API] Posts recebidos:', response.data);
     return response.data; // devolve direto o array
   },
+
+  // 🔄 NOVO ENDPOINT - Feed personalizado
+  getPersonalFeed: async (page = 1) => {
+    const response = await api.get(`/posts/feed/?page=${page}`);
+    return response.data;
+  },
+  // ... resto permanece igual
+
   createPost: async (postData) => {
     const response = await api.post('/posts/', postData);
     return response.data; // retorna objeto com count, next, previous, results
@@ -52,6 +60,8 @@ export const postsAPI = {
     return response.data;
   },
 };
+
+
 
 
 export const relationshipsAPI = {

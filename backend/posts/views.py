@@ -7,11 +7,11 @@ from rest_framework.response import Response
 from django.db.models import Q
 from .models import Post, Like, Comment
 from .serializers import PostSerializer, PostCreateSerializer, LikeSerializer, CommentSerializer
-from relationships.models import Relationship # ⬅️ COMENTE ESTA LINHA
+from relationships.models import Relationship
 
 class PostListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    pagination_class = PageNumberPagination  # ✅ aqui está a correção
+    pagination_class = PageNumberPagination
     
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -120,3 +120,37 @@ def debug_post_list(request):
         },
         'posts': serializer.data
     })
+
+
+# 🔧 IMPLEMENTAÇÃO DO FEED PERSONALIZADO
+# posts/views.py - APENAS ADICIONE ESTA CLASSE NO FINAL DO ARQUIVO
+
+class PersonalFeedView(generics.ListAPIView):
+    """
+    Feed personalizado - apenas posts de usuários que o usuário atual segue
+    """
+    serializer_class = PostSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = PageNumberPagination
+    
+    def get_queryset(self):
+        
+        # Pega IDs dos usuários que o usuário atual segue
+        following_ids = Relationship.objects.filter(
+            follower=self.request.user
+        ).values_list('followed_id', flat=True)
+        
+        # Inclui os próprios posts do usuário no feed
+        following_ids = list(following_ids) + [self.request.user.id]
+        
+        # Filtra posts: apenas de usuários seguidos + ordena por data
+        queryset = Post.objects.filter(
+            user_id__in=following_ids
+        ).order_by('-created_at')
+        
+        return queryset
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
