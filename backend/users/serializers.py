@@ -23,31 +23,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    profile_picture = serializers.ImageField(use_url=True)
-    followers_count = serializers.SerializerMethodField()
-    following_count = serializers.SerializerMethodField()
-    is_following = serializers.SerializerMethodField()
     class Meta:
         model = CustomUser
-        fields = (
-            'id', 'username', 'email', 'first_name', 'last_name',
-            'profile_picture', 'bio', 'location', 'website', 'birth_date',
-            'followers_count', 'following_count', 'is_following'
-        )
-
-    def get_followers_count(self, obj):
-        """Retorna a quantidade de seguidores"""
-        return obj.get_followers_count()
-    
-    def get_following_count(self, obj):
-        """Retorna a quantidade de pessoas que o usuário segue"""
-        return obj.get_following_count()
-    
-    def get_is_following(self, obj):
-        """Verifica se o usuário da requisição está seguindo este usuário"""
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            # Evita verificar se é o próprio usuário
-            if request.user != obj:
-                return request.user.is_following(obj)
-        return False
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'profile_picture', 'bio')

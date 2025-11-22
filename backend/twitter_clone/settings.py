@@ -16,7 +16,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework.authtoken',
     
     # Third party
     'rest_framework',
@@ -68,45 +67,21 @@ DATABASES = {
 # ✅ CORREÇÃO DO DEFAULT_AUTO_FIELD
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
 STATIC_URL = '/static/'
 
 # ✅ COMENTE TEMPORARIAMENTE o Custom User
 AUTH_USER_MODEL = 'users.CustomUser'
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-    ],
     'DEFAULT_PERMISSION_CLASSES': [
-        #'rest_framework.permissions.AllowAny', # ⬅️ Permissivo para teste
-        'rest_framework.permissions.IsAuthenticated',
-    ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,  # número de posts por página
+        'rest_framework.permissions.AllowAny', # ⬅️ Permissivo para teste
+    ]
 }
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000", # React frontend
+    "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
-
-CORS_ALLOW_ALL_ORIGINS = True
-
-CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOW_HEADERS = [
-    'authorization',
-    'content-type',
-    'x-csrftoken',
-    'accept',
-    'origin',
-    'user-agent',
-    'x-requested-with',
-]
-
 
 # >>>>>>>><<<<<<<<<Comentado temporariamente <<<<<<<<<<<>>>>>>>>>>>>>
 # import os
