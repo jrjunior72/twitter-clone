@@ -43,6 +43,7 @@ export const authAPI = {
   register: (userData) => api.post('/auth/register/', userData),
   getProfile: () => api.get('/auth/profile/'), // ⬅️ GET do perfil
   updateProfile: (profileData) => api.patch('/auth/profile/', profileData), // ⬅️ UPDATE do perfil
+  changePassword: (passwordData) => api.post('/auth/change-password/', passwordData), // CHANGE password
 };
 
 const getAuthHeaders = () => {
