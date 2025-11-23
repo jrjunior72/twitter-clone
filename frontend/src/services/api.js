@@ -69,10 +69,16 @@ export const postsAPI = {
     const response = await api.post('/posts/', postData);
     return response.data; // retorna objeto com count, next, previous, results
   },
+
   likePost: async (postId) => {
     const response = await api.post(`/posts/${postId}/like/`);
     return response.data;
   },
+  
+  // ⬇️ URLs CORRIGIDAS PARA COMENTÁRIOS
+  getPostComments: (postId) => api.get(`/posts/${postId}/comments/`),  // GET para listar
+  createComment: (postId, commentData) => api.post(`/posts/${postId}/comments/create/`, commentData),  // POST para criar
+
 };
 
 // ADICIONADO ESTE BLOCO-----------------------------------------------------

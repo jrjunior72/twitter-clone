@@ -1,25 +1,84 @@
-import React from 'react';
+// src/components/Post.js
+
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import CreateComment from './CreateComment';
+import { postsAPI } from '../services/api';
 
 function Post({ post, onLike }) {
+
+  const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [loadingComments, setLoadingComments] = useState(false);
+
+  // ⬇️ ADICIONE ESTE EFFECT PARA DEBUG
+  // useEffect(() => {
+  //   console.log('🔄 Estado comments atualizado:', comments);
+  // }, [comments]);
+
+    // Função para carregar comentários
+const loadComments = async () => {
+    // console.log('🔄 Iniciando carregamento de comentários...');
+    setLoadingComments(true);
+    
+    try {
+        const response = await postsAPI.getPostComments(post.id);
+        // console.log('✅ Dados brutos da API:', response.data);
+        
+        // ⬇️ EXTRAIA OS COMENTÁRIOS CORRETAMENTE
+        const commentsFromAPI = response.data.results;
+        // console.log('📝 Comentários extraídos:', commentsFromAPI);
+        
+        // ⬇️ VERIFIQUE SE É UM ARRAY VÁLIDO
+        if (Array.isArray(commentsFromAPI)) {
+            // console.log('🎯 Definindo comentários no estado...');
+            setComments(commentsFromAPI);
+            // console.log('✅ Estado comments deve ser atualizado para:', commentsFromAPI);
+        } else {
+            console.warn('⚠️ Comentários não são um array:', commentsFromAPI);
+            setComments([]);
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar comentários:', error);
+        setComments([]);
+    } finally {
+        setLoadingComments(false);
+        // console.log('🏁 Carregamento finalizado. loadingComments:', false);
+    }
+};
+
+  // Função quando comentário é adicionado
+  const handleCommentAdded = (newComment) => {
+    setComments(prev => [newComment, ...prev]);
+  };
+
+  // Toggle comentários
+  const toggleComments = () => {
+    setShowComments(!showComments);
+    if (!showComments && comments.length === 0) {
+      loadComments();
+    }
+  };
+
   const handleLike = () => {
     onLike(post.id);
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
-    const diffMinutes = Math.floor(diffTime / (1000 * 60));
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now - date);
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+  const diffMinutes = Math.floor(diffTime / (1000 * 60));
 
-    if (diffMinutes < 1) return 'Agora';
-    if (diffMinutes < 60) return `${diffMinutes}m`;
-    if (diffHours < 24) return `${diffHours}h`;
-    if (diffDays < 7) return `${diffDays}d`;
-    
-    return date.toLocaleDateString('pt-BR');
+  if (diffMinutes < 1) return 'Agora';
+  if (diffMinutes < 60) return `${diffMinutes}m`;
+  if (diffHours < 24) return `${diffHours}h`;
+  if (diffDays < 7) return `${diffDays}d`;
+  
+  return date.toLocaleDateString('pt-BR');
   };
 
   return (
@@ -59,10 +118,60 @@ function Post({ post, onLike }) {
         >
           {post.is_liked ? '❤️' : '🤍'} {post.likes_count || 0}
         </button>
-        <button className="comment-btn">
-          💬 {post.comments_count || 0}
+        <button 
+          className="comment-btn"
+          onClick={toggleComments}
+        >
+          💬 {comments.length > 0 ? comments.length : (post.comments_count || 0)}
         </button>
       </div>
+      {showComments && (
+        <div className="comments-section">
+          {/* ⬇️ USE O COMPONENTE CRIADO */}
+          <CreateComment 
+            postId={post.id} 
+            onCommentAdded={handleCommentAdded} 
+          />
+
+          {/* Lista de comentários */}
+          <div className="comments-list">
+            {/* {console.log('🎯 Renderizando comments-list. loading:', loadingComments, 'comments count:', comments.length)} */}
+            {loadingComments ? (
+                <div className="loading-comments">Carregando comentários...</div>
+            ) : comments.length > 0 ? (
+                  comments.map(comment => {
+                    // console.log('📝 Renderizando comentário:', comment);
+                    return (
+                      <div key={comment.id} className="comment-item">
+                          <div className="comment-header">
+                              <img 
+                                  src={comment.user?.profile_picture || '/default-avatar.png'} 
+                                  alt={comment.user?.username}
+                                  className="comment-avatar"
+                              />
+                              <div className="comment-user-info">
+                                  <strong>
+                                      {comment.user?.first_name && comment.user?.last_name 
+                                          ? `${comment.user.first_name} ${comment.user.last_name}`
+                                          : comment.user?.username
+                                      }
+                                  </strong>
+                                  <span>@{comment.user?.username}</span>
+                              </div>
+                              <span className="comment-time">
+                                  · {formatDate(comment.created_at)}
+                              </span>
+                          </div>
+                          <p className="comment-content">{comment.content}</p>
+                      </div>
+                    );
+                  })
+              ) : (
+                  <div className="no-comments">Nenhum comentário ainda. Seja o primeiro a comentar!</div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

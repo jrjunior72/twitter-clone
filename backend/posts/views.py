@@ -86,6 +86,22 @@ class CommentCreateView(generics.CreateAPIView):
         post = Post.objects.get(id=post_id)
         serializer.save(user=self.request.user, post=post)
 
+class CommentListView(generics.ListAPIView):
+    """
+    Lista todos os comentários de um post específico
+    """
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        post_id = self.kwargs['post_id']
+        return Comment.objects.filter(post_id=post_id).order_by('-created_at')
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def debug_post_list(request):
