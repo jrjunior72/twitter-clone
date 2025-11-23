@@ -218,3 +218,63 @@ def user_suggestions(request):
         'suggestions': serializer.data,
         'count': suggested_users.count()
     })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    """
+    Altera a senha do usuário autenticado
+    """
+    user = request.user
+    
+    # Obter dados da requisição
+    current_password = request.data.get('current_password')
+    new_password = request.data.get('new_password')
+    confirm_password = request.data.get('confirm_password')
+    
+    # Validações básicas
+    if not all([current_password, new_password, confirm_password]):
+        return Response(
+            {'error': 'Todos os campos são obrigatórios'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Verificar se nova senha e confirmação coincidem
+    if new_password != confirm_password:
+        return Response(
+            {'error': 'Nova senha e confirmação não coincidem'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Verificar senha atual
+    if not user.check_password(current_password):
+        return Response(
+            {'error': 'Senha atual incorreta'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Validar força da nova senha (opcional)
+    if len(new_password) < 8:
+        return Response(
+            {'error': 'A nova senha deve ter pelo menos 8 caracteres'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Alterar senha
+    try:
+        user.set_password(new_password)
+        user.save()
+        
+        # Atualizar token (opcional - força re-login)
+        # Token.objects.filter(user=user).delete()
+        # new_token = Token.objects.create(user=user)
+        
+        return Response({
+            'message': 'Senha alterada com sucesso'
+        })
+        
+    except Exception as e:
+        return Response(
+            {'error': 'Erro interno ao alterar senha'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

@@ -23,7 +23,5 @@ urlpatterns = [
     path('profile/<str:username>/following/', views.following_list, name='following_list'),
     path('suggestions/', views.user_suggestions, name='user_suggestions'),
     
-    # Remover linhas abaixo depois do teste
-    # path('users/me/', views.update_profile),  # ✅ novo endpoint
-    # path('profile/', views.get_profile, name='profile'), # → retorna dados do usuário autenticado (precisa enviar Authorization: Token <token>)
+    path('change-password/', views.change_password, name='change-password'),
 ]
