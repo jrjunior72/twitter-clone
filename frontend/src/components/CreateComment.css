@@ -1,6 +1,403 @@
 /* src/components/CreateComment.css */
 
+/* src/App.css - ADICIONE ESTES ESTILOS NO FINAL DO ARQUIVO */
+
+/* 🆕 ESTILOS PARA EDIÇÃO E EXCLUSÃO DE COMENTÁRIOS */
+
+/* Container do comentário */
+.comment-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #38444d;
+}
+
+.comment-item:last-child {
+    border-bottom: none;
+}
+
+/* Header do comentário */
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #1da1f2;
+}
+
+.comment-user-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.comment-user-info strong {
+    font-size: 14px;
+    color: #ffffff;
+}
+
+.comment-user-info span {
+    font-size: 12px;
+    color: #8899a6;
+}
+
+.comment-time {
+    font-size: 12px;
+    color: #8899a6;
+    margin-left: auto;
+}
+
+/* Conteúdo do comentário */
+.comment-content {
+    font-size: 14px;
+    color: #ffffff;
+    line-height: 1.4;
+    margin: 0 0 8px 0;
+    word-wrap: break-word;
+}
+
+/* 🆕 ÁREA DE EDIÇÃO */
+.comment-edit-area {
+    margin: 8px 0;
+}
+
+.comment-edit-textarea {
+    width: 100%;
+    border: 1px solid #38444d;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    background-color: #192734;
+    color: #ffffff;
+    transition: border-color 0.2s ease;
+}
+
+.comment-edit-textarea:focus {
+    outline: none;
+    border-color: #1da1f2;
+    box-shadow: 0 0 0 2px rgba(29, 161, 242, 0.1);
+}
+
+.comment-edit-textarea:disabled {
+    background-color: #1c2732;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* 🆕 AÇÕES DE EDIÇÃO */
+.comment-edit-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.comment-edit-cancel,
+.comment-edit-save {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: auto;
+}
+
+.comment-edit-cancel {
+    background-color: #38444d;
+    color: #ffffff;
+}
+
+.comment-edit-cancel:hover:not(:disabled) {
+    background-color: #47525c;
+}
+
+.comment-edit-save {
+    background-color: #1da1f2;
+    color: white;
+}
+
+.comment-edit-save:hover:not(:disabled) {
+    background-color: #1a91da;
+}
+
+.comment-edit-save:disabled {
+    background-color: #1d4f6e;
+    cursor: not-allowed;
+}
+
+/* 🆕 BOTÕES DE AÇÃO DO COMENTÁRIO */
+.comment-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.comment-edit-btn,
+.comment-delete-btn {
+    background: none;
+    border: none;
+    color: #8899a6;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    width: auto;
+}
+
+.comment-edit-btn:hover {
+    color: #1da1f2;
+    background-color: rgba(29, 161, 242, 0.1);
+}
+
+.comment-delete-btn:hover {
+    color: #f91880;
+    background-color: rgba(249, 24, 128, 0.1);
+}
+
+.comment-edit-btn:disabled,
+.comment-delete-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 🆕 ESTILOS PARA LOADING STATES */
+.comment-loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.spinner-small {
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+/* 🆕 ESTILOS PARA MENSAGENS DE ERRO NOS COMENTÁRIOS */
+.comment-error {
+    background-color: #422;
+    color: #f66;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-top: 8px;
+    font-size: 12px;
+    border: 1px solid #f66;
+}
+
+/* 🆕 MELHORIAS NA LISTA DE COMENTÁRIOS */
+.comments-list {
+    margin-top: 16px;
+}
+
+.loading-comments {
+    text-align: center;
+    padding: 20px;
+    color: #8899a6;
+    font-size: 14px;
+}
+
+.no-comments {
+    text-align: center;
+    padding: 20px;
+    color: #8899a6;
+    font-size: 14px;
+    border-top: 1px solid #38444d;
+    margin-top: 16px;
+}
+
+/* 🆕 ANIMAÇÕES */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 🆕 RESPONSIVIDADE PARA MOBILE */
+@media (max-width: 480px) {
+    .comment-header {
+        gap: 6px;
+    }
+    
+    .comment-avatar {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .comment-user-info strong {
+        font-size: 13px;
+    }
+    
+    .comment-user-info span,
+    .comment-time {
+        font-size: 11px;
+    }
+    
+    .comment-content {
+        font-size: 13px;
+    }
+    
+    .comment-edit-textarea {
+        padding: 10px;
+        font-size: 13px;
+        min-height: 70px;
+    }
+    
+    .comment-edit-cancel,
+    .comment-edit-save {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+    
+    .comment-edit-btn,
+    .comment-delete-btn {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+    
+    .comment-actions {
+        gap: 8px;
+    }
+}
+
+/* 🆕 ESTILOS PARA O COMPONENTE CreateComment (se necessário) */
 .create-comment {
+    background-color: #192734;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 16px;
+    border: 1px solid #38444d;
+}
+
+.create-comment-form {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.create-comment-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    object-fit: cover;
+    background-color: #1da1f2;
+}
+
+.create-comment-input {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.create-comment-input textarea {
+    border: 1px solid #38444d;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    resize: vertical;
+    font-family: inherit;
+    min-height: 60px;
+    background-color: #192734;
+    color: #ffffff;
+    transition: border-color 0.2s ease;
+}
+
+.create-comment-input textarea:focus {
+    outline: none;
+    border-color: #1da1f2;
+    box-shadow: 0 0 0 2px rgba(29, 155, 240, 0.1);
+}
+
+.create-comment-input textarea:disabled {
+    background-color: #1c2732;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.create-comment-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #38444d;
+}
+
+.character-count {
+    font-size: 12px;
+    color: #8899a6;
+    font-weight: 500;
+}
+
+.character-count.warning {
+    color: #f91880;
+}
+
+.character-count.danger {
+    color: #f4212e;
+    font-weight: 600;
+}
+
+.comment-submit-btn {
+    background-color: #1da1f2;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 80px;
+    width: auto;
+}
+
+.comment-submit-btn:hover:not(:disabled) {
+    background-color: #1a91da;
+    transform: translateY(-1px);
+}
+
+.comment-submit-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.comment-submit-btn:disabled {
+    background-color: #1d4f6e;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Estados de erro */
+.create-comment.has-error {
+    border-color: #f4212e;
+}
+
+.create-comment .error-message {
+    color: #f4212e;
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+
+/* ESTILOS ANTIGOS */
+/* .create-comment {
     background-color: white;
     border-radius: 12px;
     padding: 12px;
@@ -112,15 +509,15 @@
     border-top: 2px solid white;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-}
+} */
 
-@keyframes spin {
+/* @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
-}
+} */
 
 /* Estados de erro */
-.create-comment.has-error {
+/* .create-comment.has-error {
     border-color: #f4212e;
 }
 
@@ -129,10 +526,10 @@
     font-size: 12px;
     font-weight: 500;
     margin-top: 4px;
-}
+} */
 
 /* Responsividade */
-@media (max-width: 480px) {
+/* @media (max-width: 480px) {
     .create-comment {
         padding: 8px;
     }
@@ -150,4 +547,4 @@
         padding: 8px;
         font-size: 13px;
     }
-}
+} */

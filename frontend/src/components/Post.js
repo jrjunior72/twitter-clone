@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import CreateComment from './CreateComment';
 import { postsAPI } from '../services/api';
+import { useAuth } from '../contexts/AuthContext'; // HOOK DE AUTENTICAÇÃO
 
 function Post({ post, onLike }) {
 
@@ -11,13 +12,21 @@ function Post({ post, onLike }) {
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(false);
 
+  // 🆕 ESTADOS PARA EDIÇÃO DE COMENTÁRIOS
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editCommentContent, setEditCommentContent] = useState('');
+  const [loadingEdit, setLoadingEdit] = useState(false);
+  const [loadingDelete, setLoadingDelete] = useState(false);
+
+  const { user } = useAuth(); // ⬅️ OBTER USUÁRIO ATUAL
+
   // ⬇️ ADICIONE ESTE EFFECT PARA DEBUG
   // useEffect(() => {
   //   console.log('🔄 Estado comments atualizado:', comments);
   // }, [comments]);
 
     // Função para carregar comentários
-const loadComments = async () => {
+  const loadComments = async () => {
     // console.log('🔄 Iniciando carregamento de comentários...');
     setLoadingComments(true);
     
@@ -52,6 +61,69 @@ const loadComments = async () => {
   const handleCommentAdded = (newComment) => {
     setComments(prev => [newComment, ...prev]);
   };
+
+  // 🆕 FUNÇÃO PARA INICIAR EDIÇÃO
+  const startEditComment = (comment) => {
+    setEditingCommentId(comment.id);
+    setEditCommentContent(comment.content);
+  };
+
+  // 🆕 FUNÇÃO PARA SALVAR EDIÇÃO
+  const saveEditComment = async (commentId) => {
+    if (!editCommentContent.trim()) {
+      alert('O comentário não pode estar vazio');
+      return;
+    }
+
+    setLoadingEdit(true);
+    try {
+      const response = await postsAPI.updateComment(post.id, commentId, {
+        content: editCommentContent
+      });
+      
+      // Atualizar o comentário na lista
+      const updatedComments = comments.map(comment => 
+        comment.id === commentId ? response.data : comment
+      );
+      setComments(updatedComments);
+      setEditingCommentId(null);
+      setEditCommentContent('');
+    } catch (error) {
+      console.error('❌ Erro ao editar comentário:', error);
+      alert('Erro ao editar comentário. Tente novamente.');
+    } finally {
+      setLoadingEdit(false);
+    }
+  };
+
+  // 🆕 FUNÇÃO PARA CANCELAR EDIÇÃO
+  const cancelEditComment = () => {
+    setEditingCommentId(null);
+    setEditCommentContent('');
+  };
+
+  // 🆕 FUNÇÃO PARA EXCLUIR COMENTÁRIO
+  const deleteComment = async (commentId) => {
+    if (!window.confirm('Tem certeza que deseja excluir este comentário?')) {
+      return;
+    }
+
+    setLoadingDelete(true);
+    try {
+      await postsAPI.deleteComment(post.id, commentId);
+      
+      // Remover o comentário da lista
+      const updatedComments = comments.filter(comment => comment.id !== commentId);
+      setComments(updatedComments);
+    } catch (error) {
+      console.error('❌ Erro ao excluir comentário:', error);
+      alert('Erro ao excluir comentário. Tente novamente.');
+    } finally {
+      setLoadingDelete(false);
+    }
+  };
+
+
 
   // Toggle comentários
   const toggleComments = () => {
@@ -141,6 +213,9 @@ const loadComments = async () => {
             ) : comments.length > 0 ? (
                   comments.map(comment => {
                     // console.log('📝 Renderizando comentário:', comment);
+                    const isOwner = user?.id === comment.user?.id;
+                    const isEditing = editingCommentId === comment.id; // ✅ CORRIGIDO: Definição correta
+                    
                     return (
                       <div key={comment.id} className="comment-item">
                           <div className="comment-header">
@@ -162,7 +237,58 @@ const loadComments = async () => {
                                   · {formatDate(comment.created_at)}
                               </span>
                           </div>
-                          <p className="comment-content">{comment.content}</p>
+
+                          {/* 🆕 ÁREA DE CONTEÚDO DO COMENTÁRIO - COM EDIÇÃO */}
+                          {isEditing ? (
+                            <div className="comment-edit-area">
+                              <textarea
+                                value={editCommentContent}
+                                onChange={(e) => setEditCommentContent(e.target.value)}
+                                disabled={loadingEdit}
+                                rows="3"
+                                className="comment-edit-textarea"
+                              />
+                              <div className="comment-edit-actions">
+                                <button 
+                                  onClick={cancelEditComment}
+                                  disabled={loadingEdit}
+                                  className="comment-edit-cancel"
+                                >
+                                  Cancelar
+                                </button>
+                                <button 
+                                  onClick={() => saveEditComment(comment.id)}
+                                  disabled={loadingEdit || !editCommentContent.trim()}
+                                  className="comment-edit-save"
+                                >
+                                  {loadingEdit ? 'Salvando...' : 'Salvar'}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="comment-content">{comment.content}</p>
+                          )}
+
+                          {/* 🆕 BOTÕES DE AÇÃO - APENAS PARA DONO DO COMENTÁRIO */}
+                          {isOwner && !isEditing && (
+                            <div className="comment-actions">
+                              <button 
+                                onClick={() => startEditComment(comment)}
+                                disabled={loadingDelete}
+                                className="comment-edit-btn"
+                              >
+                                Editar
+                              </button>
+                              <button 
+                                onClick={() => deleteComment(comment.id)}
+                                disabled={loadingDelete}
+                                className="comment-delete-btn"
+                              >
+                                {loadingDelete ? 'Excluindo...' : 'Excluir'}
+                              </button>
+                            </div>
+                          )}
+
                       </div>
                     );
                   })

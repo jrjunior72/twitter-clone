@@ -12,7 +12,8 @@ urlpatterns = [
         # ⬇️ URLs DE COMENTÁRIOS
     path('<int:post_id>/comments/', views.CommentListView.as_view(), name='comment-list'),  # ⬅️ LISTAR comentários
     path('<int:post_id>/comments/create/', views.CommentCreateView.as_view(), name='comment-create'),  # ⬅️ CRIAR comentário
-    # 🔄 NOVA URL PARA FEED PERSONALIZADO (CBV)
+    path('<int:post_id>/comments/<int:comment_id>/', views.CommentDetailView.as_view(), name='comment-detail'),
+    # 🔄 URL PARA FEED PERSONALIZADO (CBV)
     path('feed/', views.PersonalFeedView.as_view(), name='personal_feed'),
     
-] 
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
