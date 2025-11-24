@@ -10,6 +10,7 @@ from .serializers import UserRegistrationSerializer, UserProfileSerializer
 from .models import CustomUser
 from django.shortcuts import get_object_or_404
 from relationships.models import Relationship
+from django.db.models import Q
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -278,3 +279,35 @@ def change_password(request):
             {'error': 'Erro interno ao alterar senha'}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    
+
+# VIEW BUSCAR USUÁRIOS
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def search_users(request):
+    """
+    Busca usuários por username, nome ou email
+    """
+    query = request.query_params.get('q', '').strip()
+    
+    if not query or len(query) < 2:
+        return Response(
+            {'error': 'Forneça pelo menos 2 caracteres para busca'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Busca em username, first_name, last_name e email
+    users = CustomUser.objects.filter(
+        Q(username__icontains=query) |
+        Q(first_name__icontains=query) |
+        Q(last_name__icontains=query) |
+        Q(email__icontains=query)
+    ).exclude(id=request.user.id)  # Exclui o próprio usuário
+    
+    serializer = UserProfileSerializer(users, many=True, context={'request': request})
+    
+    return Response({
+        'query': query,
+        'count': users.count(),
+        'results': serializer.data
+    })
