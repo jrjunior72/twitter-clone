@@ -94,7 +94,7 @@ export const usersAPI = {
   unfollowUser: (user_id) => api.post(`/auth/unfollow/${user_id}/`),
   checkFollowStatus: (user_id) => api.get(`/auth/follow-status/${user_id}/`),
   getUserSuggestions: () => api.get('/auth/suggestions/'),
-  searchUsers: (query) => api.get(`/auth/users/search/?q=${query}`),
+  searchUsers: (query) => api.get(`/auth/search/?q=${encodeURIComponent(query)}`),
 };
 //----------------------------------------------------------------------------
 

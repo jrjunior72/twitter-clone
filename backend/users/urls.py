@@ -23,5 +23,9 @@ urlpatterns = [
     path('profile/<str:username>/following/', views.following_list, name='following_list'),
     path('suggestions/', views.user_suggestions, name='user_suggestions'),
     
+    # 📝 URL CHANGE PASSWORD
     path('change-password/', views.change_password, name='change-password'),
+
+    # 🔍 URL BUSCAR USUÁRIOS
+    path('search/', views.search_users, name='search-users'),
 ]
