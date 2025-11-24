@@ -102,6 +102,39 @@ class CommentListView(generics.ListAPIView):
         context['request'] = self.request
         return context
 
+
+# VIEW EDITAR/EXCLUIR COMENTÁRIOS
+class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    View para recuperar, atualizar e excluir um comentário específico
+    """
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Filtra para garantir que só acesse comentários do post correto
+        post_id = self.kwargs['post_id']
+        return Comment.objects.filter(post_id=post_id)
+
+    def get_object(self):
+        # Obtém o comentário específico
+        post_id = self.kwargs['post_id']
+        comment_id = self.kwargs['comment_id']
+        return Comment.objects.get(post_id=post_id, id=comment_id)
+
+    def perform_update(self, serializer):
+        # Garante que apenas o dono pode editar
+        if serializer.instance.user != self.request.user:
+            raise permissions.PermissionDenied("Você só pode editar seus próprios comentários")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        # Garante que apenas o dono pode excluir
+        if instance.user != self.request.user:
+            raise permissions.PermissionDenied("Você só pode excluir seus próprios comentários")
+        instance.delete()
+
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def debug_post_list(request):
@@ -156,8 +189,6 @@ def debug_post_list(request):
 
 
 # 🔧 IMPLEMENTAÇÃO DO FEED PERSONALIZADO
-# posts/views.py - APENAS ADICIONE ESTA CLASSE NO FINAL DO ARQUIVO
-
 class PersonalFeedView(generics.ListAPIView):
     """
     Feed personalizado - apenas posts de usuários que o usuário atual segue

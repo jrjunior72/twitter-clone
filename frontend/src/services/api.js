@@ -79,6 +79,13 @@ export const postsAPI = {
   getPostComments: (postId) => api.get(`/posts/${postId}/comments/`),  // GET para listar
   createComment: (postId, commentData) => api.post(`/posts/${postId}/comments/create/`, commentData),  // POST para criar
 
+  // 🆕 NOVAS FUNÇÕES PARA EDITAR/EXCLUIR COMENTÁRIOS
+  updateComment: (postId, commentId, commentData) => 
+    api.patch(`/posts/${postId}/comments/${commentId}/`, commentData),
+  
+  deleteComment: (postId, commentId) => 
+    api.delete(`/posts/${postId}/comments/${commentId}/`),
+
 };
 
 // ADICIONADO ESTE BLOCO-----------------------------------------------------
