@@ -24,13 +24,16 @@ function CreatePost({ onNewPost }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // ✅ CORREÇÃO: Permitir posts apenas com imagem (sem texto)
+    // ✅ MENSAGENS DE ERRO ESPECÍFICAS
     if (!content.trim() && !image) {
-      setError('O post não pode estar vazio');
+      setError('Adicione texto ou uma imagem para postar');
       return;
     }
     
-    if (content.length > 280) {
-      setError('O post não pode ter mais de 280 caracteres');
+    // ✅ CORREÇÃO: Só validar caracteres se tiver texto
+    if (content.trim() && content.length > 280) {
+      setError(`O texto não pode ter mais de 280 caracteres (${content.length}/280)`);
       return;
     }
     
@@ -40,10 +43,14 @@ function CreatePost({ onNewPost }) {
     try {
       const formData = new FormData();
       formData.append("content", content);
-      if (image) formData.append("image", image);
+      if (image) {
+        formData.append("image", image);
+        console.log(' - Imagem anexada:', image.name, image.size);
+      }
     
       const newPost = await postsAPI.createPost(formData);
-      // const newPost = await postsAPI.createPost({ content });
+      console.log('✅ Post criado com sucesso:', newPost);
+
       onNewPost(newPost);
 
       // resetar estados
@@ -53,10 +60,27 @@ function CreatePost({ onNewPost }) {
       if (preview) URL.revokeObjectURL(preview); // libera a URL temporária
       setPreview(null);
       if (fileInputRef.current) fileInputRef.current.value = '';  // ✅ limpa o input
-      console.log("Novo post criado:", newPost);
+      
     } catch (error) {
-      setError('Erro ao criar post. Tente novamente.');
-      console.error('Error creating post:', error);
+      // setError('Erro ao criar post. Tente novamente.');
+      console.error('❌ Erro ao criar post:', error);
+      console.error(' - Error response:', error.response);
+      console.error(' - Error message:', error.message);
+
+      // ✅ MENSAGEM DE ERRO MAIS ESPECÍFICA
+      if (error.response?.data) {
+        // Se o backend retornar detalhes do erro
+        const errorData = error.response.data;
+        if (typeof errorData === 'object') {
+          setError(errorData.detail || errorData.message || 'Erro ao criar post');
+        } else if (typeof errorData === 'string') {
+          setError(errorData);
+        } else {
+          setError('Erro ao criar post. Tente novamente.');
+        }
+      } else {
+        setError('Erro de conexão. Verifique sua internet e tente novamente.');
+      }
     } finally {
       setLoading(false);
     }
@@ -83,29 +107,10 @@ function CreatePost({ onNewPost }) {
             onChange={(e) => setContent(e.target.value)}
             maxLength={280}
             disabled={loading}
+            rows="1" // ✅ Altura reduzida
+            style={{ fontSize: '20px' }} // ✅ Fonte maior como Twitter
           />
-          {/* Botão de upload estilizado */}
-          <div className='file-upload'>
-            <input 
-              type="file" 
-              accept="image/*" 
-              onChange={handleImageChange}
-              disabled={loading}
-              ref={fileInputRef}
-              style={{ display: 'none' }}   // ✅ escondemos o input
-              id="fileInput"
-            />
-            <label htmlFor="fileInput" className="upload-button">
-              {/* ou substitua por um ícone SVG moderno */}
-              <svg xmlns="http://www.w3.org/2000/svg" 
-                  fill="none" viewBox="0 0 24 24" 
-                  stroke="currentColor" width="24" height="24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
-                      d="M3 7a2 2 0 012-2h3l2-2h4l2 2h3a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
-                      d="M12 11a3 3 0 100-6 3 3 0 000 6zM3 20l6-6 4 4 8-8" />
-              </svg>
-            </label>
+
             {/* Pré-visualização da imagem */}
             {preview && (
               <div className="image-preview">
@@ -115,33 +120,61 @@ function CreatePost({ onNewPost }) {
                   className="remove-image" 
                   onClick={() => { setImage(null); setPreview(null); fileInputRef.current.value = ''; }}
                 >
-                  ❌ Remover
+                  ×
                 </button>
-              </div>)}
+              </div>
+            )}
             {error && <div className="error-message" style={{marginTop: '8px'}}>{error}</div>}
-          </div>
         </div>
       </form>
-      
+      {/* ✅ Actions separadas - ícone, character count e botão alinhados */}
       <div className="create-post-actions">
-        <div className="character-count" style={{ 
-          color: characterCount > 260 ? '#f91880' : '#8899a6',
-          fontSize: '14px'
-        }}>
-          {characterCount}/{maxCharacters}
+        <div className="create-post-left-actions">
+          {/* Character count */}
+          <div className="character-count" style={{ 
+            color: characterCount > 260 ? '#f91880' : '#8899a6',
+            fontSize: '14px'
+            }}>
+            {characterCount}/{maxCharacters}
+          </div>
+          {/* Ícone de upload */}
+          <div className='file-upload'>
+            <input 
+              type="file" 
+              accept="image/*" 
+              onChange={handleImageChange}
+              disabled={loading}
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              id="fileInput"
+            />
+            <label htmlFor="fileInput" className="upload-button">
+              <svg xmlns="http://www.w3.org/2000/svg" 
+                  fill="none" viewBox="0 0 24 24" 
+                  stroke="#1d9bf0" width="20" height="20"> {/* ✅ Ícone menor e azul */}
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                      d="M3 7a2 2 0 012-2h3l2-2h4l2 2h3a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                      d="M12 11a3 3 0 100-6 3 3 0 000 6zM3 20l6-6 4 4 8-8" />
+              </svg>
+            </label>
+          </div>
+        </div>  
+        <div className="create-post-right-actions">
+          {/* Botão Postar */}
+          <button 
+            type="submit" 
+            className="post-button"
+            onClick={handleSubmit}
+            disabled={loading || (!content.trim() && !image) || (content.trim() && content.length > 280)}
+          >
+            {loading ? (
+              <div className="spinner"></div>   // ✅ spinner simples
+            ) : (
+              'Postar'
+            )}
+          </button>
         </div>
-        <button 
-          type="submit" 
-          className="post-button"
-          onClick={handleSubmit}
-          disabled={loading || (!content.trim() && !image) || content.length > 280}
-        >
-          {loading ? (
-            <div className="spinner"></div>   // ✅ spinner simples
-          ) : (
-            'Postar'
-          )}
-        </button>
       </div>
     </div>
   );

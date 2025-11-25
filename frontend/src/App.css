@@ -152,14 +152,20 @@ button:disabled {
   color: #8899a6;
 }
 
-/* Character Count Styles */
+/* ✅ Character count estilo Twitter */
 .character-count {
-  font-size: 14px;
-  color: #8899a6;
+  font-size: 14px !important;
+  color: #8b98a5 !important;
+  font-weight: 500 !important;
 }
 
 .character-count.warning {
-  color: #f91880;
+  color: #ffd400 !important;
+}
+
+.character-count.danger {
+  color: #f91880 !important;
+  font-weight: 600 !important;
 }
 
 /* Create Post */
@@ -195,26 +201,60 @@ button:disabled {
   background: transparent;
   border: none;
   color: #ffffff;
-  font-size: 16px;
+  font-size: 20px !important; /* ✅ Fonte maior como Twitter */
   resize: none;
-  min-height: 60px;
+  min-height: 40px !important; /* ✅ Altura reduzida */
+  line-height: 1.4;
 }
 
 .create-post-input textarea:focus {
   outline: none;
 }
 
+.create-post-input textarea::placeholder {
+  color: #8b98a5;
+  font-size: 24px; /* ✅ Placeholder com mesma fonte */
+}
+
 .create-post-actions {
-  display: flex;
-  justify-content: space-between;
+  display: flex !important;
+  justify-content: space-between !important; /* ✅ Botão à direita */
   align-items: center;
   margin-top: 1rem;
+  padding-left: 60px !important; /* ✅ Remove padding extra */
+}
+
+/* ✅ Remove o character count das actions (já está no file-upload) */
+/* .create-post-actions .character-count {
+  display: none !important;
+} */
+
+/* ✅ Lado esquerdo - ícone */
+.create-post-left-actions {
+  display: flex;
+  align-items: center;
+}
+
+/* ✅ Lado direito - character count e botão */
+.create-post-right-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
 }
 
 .post-button {
   width: auto;
   padding: 8px 20px;
   border-radius: 20px;
+}
+
+.post-button:hover:not(:disabled) {
+  background-color: #1a8cd8 !important;
+}
+
+.post-button:disabled {
+  background-color: #1d4f6e !important;
+  opacity: 0.7 !important;
 }
 
 /* Post Styles */
@@ -706,18 +746,21 @@ button:disabled {
 }
 
 .file-upload {
-  display: flex;
-  align-items: center;
+  display: flex !important;
+  align-items: center !important;
   margin-top: 8px;
+  gap: 16px !important;
+  margin-top: 0 !important;
 }
 
 .upload-button {
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.2s;
+  display: flex !important;
   cursor: pointer;
   font-size: 20px;
   color: #1da1f2; /* azul estilo Twitter */
-  padding: 6px;
-  border-radius: 50%;
-  transition: background 0.2s;
 }
 
 .upload-button:hover {
@@ -725,25 +768,51 @@ button:disabled {
 }
 
 .image-preview {
-  margin-top: 10px;
-  position: relative;
+  height: auto;
+  margin-top: 12px !important;
+  position: relative !important;
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  background-color: #000 !important;
+  border-radius: 16px !important;
+  border: 1px solid #38444d !important;
+  overflow: hidden !important;
+  object-fit: cover !important;
 }
 
 .preview-img {
-  max-width: 100%;
-  border-radius: 8px;
+  width: 100% !important;
+  height: auto !important;
+  max-height: 500px !important;
+  display: block !important;
 }
 
 .remove-image {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background: rgba(0,0,0,0.6);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  padding: 4px 6px;
+  position: absolute !important;
+  top: 12px !important;
+  right: 12px !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 36px !important;
+  height: 36px !important;
+  cursor: pointer !important;
+  font-size: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 10 !important;
+  transition: all 0.2s !important;
+  font-weight: 300 !important;
+  line-height: 1 !important;
+}
+
+.remove-image:hover {
+  background: rgba(0, 0, 0, 0.9) !important;
+  transform: scale(1.1) !important;
 }
 
 .spinner {
