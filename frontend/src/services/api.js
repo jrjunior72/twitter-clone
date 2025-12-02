@@ -3,7 +3,7 @@
 import axios from 'axios';
 
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL + '/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL
 
 // Criar instância do axios com configurações
 const api = axios.create({
