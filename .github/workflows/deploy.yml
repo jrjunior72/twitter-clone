@@ -6,24 +6,24 @@ on:
       - main   # dispara quando você faz push no branch main
 
 jobs:
-  backend-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout código
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v3
+      - name: Configurar chave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan ssh.pythonanywhere.com >> ~/.ssh/known_hosts
 
       - name: Deploy no PythonAnywhere
-        env:
-          PA_USER: ${{ secrets.PA_USER }}
-          PA_HOST: ssh.pythonanywhere.com
-          PA_PATH: /home/${{ secrets.PA_USER }}/twitter-clone-fixed/backend
         run: |
-          ssh ${{ secrets.PA_USER }}@${{ env.PA_HOST }} "
-            cd ${{ env.PA_PATH }} &&
+          ssh -i ~/.ssh/id_ed25519 ricardoferreirajr@ssh.pythonanywhere.com "
+            cd /home/ricardoferreirajr/twitter-clone-fixed/backend &&
             git pull &&
             source env/bin/activate &&
             python manage.py migrate &&
