@@ -1,0 +1,71 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main   # dispara quando você faz push no branch main
+
+jobs:
+  backend-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+
+      - name: Deploy no PythonAnywhere
+        env:
+          PA_USER: ${{ secrets.PA_USER }}
+          PA_HOST: ssh.pythonanywhere.com
+          PA_PATH: /home/${{ secrets.PA_USER }}/twitter-clone-fixed/backend
+        run: |
+          ssh ${{ secrets.PA_USER }}@${{ env.PA_HOST }} "
+            cd ${{ env.PA_PATH }} &&
+            git pull &&
+            source env/bin/activate &&
+            python manage.py migrate &&
+            touch reload
+          "
+
+# name: Deploy Backend to PythonAnywhere
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         python-version: [3.10]   # mesma versão usada no PythonAnywhere
+
+#     steps:
+#       - name: Checkout código
+#         uses: actions/checkout@v3
+
+#       - name: Set up Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: ${{ matrix.python-version }}
+
+#       - name: Instalar dependências
+#         run: pip install -r backend/requirements.txt
+
+#       - name: Deploy no PythonAnywhere
+#         env:
+#           PA_USER: ${{ secrets.PA_USER }}
+#           PA_HOST: ssh.pythonanywhere.com
+#           PA_PATH: /home/${{ secrets.PA_USER }}/twitter-clone-fixed/backend
+#         run: |
+#           ssh ${{ secrets.PA_USER }}@${{ env.PA_HOST }} "
+#             cd ${{ env.PA_PATH }} &&
+#             git pull &&
+#             source env/bin/activate &&
+#             python manage.py migrate &&
+#             touch reload
+#           "
