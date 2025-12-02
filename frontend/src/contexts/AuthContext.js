@@ -85,7 +85,7 @@ export function AuthProvider({ children }) {
       if (profileData instanceof FormData) {
         const token = localStorage.getItem('access_token');
         response = await axios.patch(
-          'http://localhost:8080/api/auth/profile/update/',
+          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/profile/update/`,
           profileData,
           {
             headers: {
