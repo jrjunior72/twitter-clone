@@ -1,3 +1,5 @@
+# twitter_clone/settings.py
+
 import os
 from pathlib import Path
 
@@ -16,10 +18,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework.authtoken',
     
     # Third party
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
     
     # Apps
@@ -91,6 +93,7 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000", # React frontend
     "http://127.0.0.1:3000",
+    "https://twitter-clone-alpha-drab.vercel.app",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
