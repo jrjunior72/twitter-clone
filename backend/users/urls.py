@@ -28,4 +28,7 @@ urlpatterns = [
 
     # 🔍 URL BUSCAR USUÁRIOS
     path('search/', views.search_users, name='search-users'),
+
+# URL PARA DEPLOY DO PYTHON ANYWHERE
+    path("update_server/", views.update_server, name="update_server"),
 ]
