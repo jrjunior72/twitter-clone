@@ -2,24 +2,41 @@ from django.http import HttpResponse
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
 
-import git
+import subprocess
 
+import git
+import os
+
+# SECRET_TOKEN = os.environ.get("DEPLOY_TOKEN", "b5e64baa94062020344a75d0080f0862d56b39f5")
 
 @csrf_exempt
 def update(request):
     if request.method == "POST":
-        '''
-        pass the path of the diectory where your project will be
-        stored on PythonAnywhere in the git.Repo() as parameter.
-        Here the name of my directory is "test.pythonanywhere.com"
-        '''
-        repo = git.Repo('/home/ricardoferreirajr/twitter-clone-fixed/backend/twitter_clone')
-        origin = repo.remotes.origin
+        # token = request.headers.get("X-Deploy-Token")
+        # if token != SECRET_TOKEN:
+        #     return JsonResponse({"error": "Unauthorized"}, status=403)
 
+        repo = git.Repo('/home/ricardoferreirajr/twitter-clone-fixed/backend/')
+        origin = repo.remotes.origin
         origin.pull()
-        return HttpResponse("Updated code on PythonAnywhere")
-    else:
-        return HttpResponse("Couldn't update the code on PythonAnywhere")
+
+        # Executa migrations
+        subprocess.call([
+            "python3", "/home/ricardoferreirajr/twitter-clone-fixed/backend/manage.py", "migrate", "--noinput"
+        ])
+
+        # Coleta arquivos estáticos
+        subprocess.call([
+            "python3", "/home/ricardoferreirajr/twitter-clone-fixed/backend/manage.py", "collectstatic", "--noinput"
+        ])
+
+        # Força reload da aplicação
+        subprocess.call([
+            "touch", "/var/www/ricardoferreirajr_pythonanywhere_com_wsgi.py"
+        ])
+
+        return HttpResponse("Deploy automático concluído com sucesso!")
+    return HttpResponse("Método inválido")
 
 
 def hello_world(request):

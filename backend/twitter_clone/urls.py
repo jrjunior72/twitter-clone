@@ -11,7 +11,7 @@ urlpatterns = [
     path('api/auth/', include('users.urls')), # ⬅️ rotas do app users
     path('api/posts/', include('posts.urls')), # ⬅️ rotas do app posts
     path('api/relationships/', include('relationships.urls')), 
-    path("update_server/", views.update, name="update"),
+    path("update_server/", views.update, name="update_server"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
