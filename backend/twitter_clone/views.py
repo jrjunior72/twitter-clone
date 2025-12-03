@@ -14,6 +14,7 @@ import os
 @csrf_exempt
 def update_server(request):
     if request.method == "POST":
+        
         # token = request.headers.get("X-Deploy-Token")
         # if token != SECRET_TOKEN:
         #     return JsonResponse({"error": "Unauthorized"}, status=403)
