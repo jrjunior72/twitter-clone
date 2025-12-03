@@ -10,15 +10,18 @@ import os
 # SECRET_TOKEN = os.environ.get("DEPLOY_TOKEN", "b5e64baa94062020344a75d0080f0862d56b39f5")
 
 @csrf_exempt
-def update(request):
+def update_server(request):
     if request.method == "POST":
         # token = request.headers.get("X-Deploy-Token")
         # if token != SECRET_TOKEN:
         #     return JsonResponse({"error": "Unauthorized"}, status=403)
 
+        # Abre o repositório na raiz
         repo = git.Repo('/home/ricardoferreirajr/twitter-clone-fixed/')
         origin = repo.remotes.origin
-        origin.pull()
+
+        # Puxa sempre a branch deploy/pythonanywhere
+        origin.pull('deploy/pythonanywhere')
 
         # Executa migrations
         subprocess.call([
