@@ -42,6 +42,6 @@ def update_server(request):
     return HttpResponse("Método inválido")
 
 
-def hello_world(request):
-    template = loader.get_template('hello_world.html')
-    return HttpResponse(template.render())
+# def hello_world(request):
+#     template = loader.get_template('hello_world.html')
+#     return HttpResponse(template.render())
