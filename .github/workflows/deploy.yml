@@ -1,34 +1,43 @@
-name: CI/CD Pipeline
+name: Deploy to PythonAnywhere
 
 on:
   push:
-    branches:
-      - main   # dispara quando você faz push no branch main
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v3
-
-      - name: Configurar chave SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan ssh.pythonanywhere.com >> ~/.ssh/known_hosts
-
-      - name: Deploy no PythonAnywhere
-        run: |
-          ssh -i ~/.ssh/id_ed25519 ricardoferreirajr@ssh.pythonanywhere.com "
-            cd /home/ricardoferreirajr/twitter-clone-fixed/backend &&
-            git pull &&
-            source env/bin/activate &&
-            python manage.py migrate &&
-            touch reload
-          "
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Deploy via SSH
+      run: |
+        # Instalar SSH
+        mkdir -p ~/.ssh
+        
+        # Configurar chave SSH do GitHub Secrets
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        
+        # Adicionar servidor aos known hosts
+        ssh-keyscan ssh.pythonanywhere.com >> ~/.ssh/known_hosts
+        
+        # Executar deploy no PythonAnywhere
+        ssh ricardoferreirajr@ssh.pythonanywhere.com "
+          cd /home/ricardoferreirajr/twitter-clone-fixed/backend
+          git pull origin main
+          pip install -r requirements.txt
+          python manage.py migrate
+          python manage.py collectstatic --noinput
+          echo '✅ Deploy concluído!'
+        "
 
 # name: Deploy Backend to PythonAnywhere
 
