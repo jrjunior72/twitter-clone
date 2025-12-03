@@ -16,7 +16,7 @@ def update(request):
         # if token != SECRET_TOKEN:
         #     return JsonResponse({"error": "Unauthorized"}, status=403)
 
-        repo = git.Repo('/home/ricardoferreirajr/twitter-clone-fixed/backend/')
+        repo = git.Repo('/home/ricardoferreirajr/twitter-clone-fixed/')
         origin = repo.remotes.origin
         origin.pull()
 
