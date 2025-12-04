@@ -115,13 +115,15 @@ function Profile() {
     const [postsCount, setPostsCount] = useState(0);
 
     // Effect para contar posts do usuário
+    const API_URL = process.env.REACT_APP_API_URL;
+    
     useEffect(() => {
         if (!user) return;
         
         const countUserPosts = async () => {
             try {
                 const token = localStorage.getItem("access_token");
-                const response = await fetch(`http://localhost:8080/api/posts/?user=${user.id}`, {
+                const response = await fetch(`${API_URL}/posts/?user=${user.id}`, {
                     headers: { 
                         Authorization: `Token ${token}`,
                         'Content-Type': 'application/json'
