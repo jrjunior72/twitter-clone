@@ -116,7 +116,7 @@ function Profile() {
 
     // Effect para contar posts do usuário
     const API_URL = process.env.REACT_APP_API_URL;
-    
+
     useEffect(() => {
         if (!user) return;
         
@@ -478,6 +478,10 @@ return (
                                 src={imagePreview || user?.profile_picture || '/default-avatar.png'} 
                                 alt="Preview" 
                                 className="image-preview-img"
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjQiIGN5PSIyNCIgcj0iMjQiIGZpbGw9IiMxZGE5ZjIiLz4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xMiAxMkMxNC4yMDkxIDEyIDE2IDEwLjIwOTEgMTYgOEMxNiA1Ljc5MDg2IDE4IDQgMTIgNEM5Ljc5MDg2IDQgOCA1Ljc5MDg2IDggOEM4IDEwLjIwOTEgOS43OTA4NiAxMiAxMiAxMlpNMTIgMTRDOS4zMyAxNCA0IDE1LjM0IDQgMThWMjBIMjBWMTguQzIwIDE1LjM0IDE0LjY3IDE0IDEyIDE0WiIvPgo8L3N2Zz4KPC9zdmc+';
+                                }}
                             />
                         </div>
                         <div className="image-upload-controls">
